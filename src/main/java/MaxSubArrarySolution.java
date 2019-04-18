@@ -12,6 +12,50 @@ public class MaxSubArrarySolution {
         }
         System.out.println(result);
         System.out.println(ids);
+        boolean[] possibilities =  new boolean[]{true, true, true, true, true, true, true, true,true, true, true, true,true, true, true};
+        int[] starts = new int[a.length];
+        for (int i=a.length-1;i>=0;i--){
+            int startI = findByEndPosition(a, i);
+            starts[i] = startI;
+            if(i>0){
+                int startPreviousI = findByEndPosition(a,i-1);
+                if(startI==startPreviousI){
+                    if(a[i]>0)
+                        possibilities[i - 1] = false;
+                    else
+                        possibilities[i] =false;
+                    System.out.println("cover previous ,endI: "+i+",startI: "+startI);
+                }
+                if(i==startI){
+                    possibilities[i-1] =false;
+                    System.out.println("drop previous,endI: "+i+",startI: "+startI);
+                }
+            }
+        }
+        int biggest = 0;
+        int startI=0;
+        int foundEnd=0;
+        for (int i = 0; i <possibilities.length ; i++) {
+            if(possibilities[i]){
+                startI = findByEndPosition(a, i);
+
+                int total = getSum(a,Pair.of(startI,i));
+                if(total>biggest){
+                    biggest = total;
+                    foundEnd = i;
+                }
+
+            }
+        }
+        System.out.println("biggest:"+biggest+"["+startI+","+foundEnd+"]");
+    }
+    private int findByEndPosition(int[] arr,int endI){
+        if(endI==0)
+            return endI;
+        if(endI==1)
+            return arr[0]>0?0:1;
+        int startBypreviousEndI =findByEndPosition(arr,endI-1);
+        return getSum(arr,Pair.of(startBypreviousEndI,endI-1))>0?startBypreviousEndI:endI;
     }
 
     private Pair<Integer, Integer> findMaxSubSum(int[] arr, int begin, int end) {
