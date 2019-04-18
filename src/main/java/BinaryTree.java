@@ -10,7 +10,7 @@ import java.util.Objects;
 public class BinaryTree {
     TreeNode<Integer> root ;
     public  void addNode(Integer data){
-        TreeNode<Integer> newNode = new TreeNode<>();
+        TreeNode<Integer> newNode = new TreeNode<Integer>();
         newNode.data = data;
         if(Objects.isNull(root)){
             root = newNode;
