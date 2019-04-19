@@ -68,7 +68,45 @@ public class MaxSubArrarySolution {
     public void testSimpleDP(){
         System.out.println(findBySimpleDP(a));
     }
+    @Test
+    public void testTestBook(){
+        int sum = findByTextBook(a, 0, a.length - 1);
+        System.out.println(sum);
+    }
+    private int findByTextBook(int[] a,int low,int high){
+        if (low == high) {
+            return a[low];
+        }
+        int mid = (low+high)/2;
+        int left = findByTextBook(a,low,mid);
+        int right = findByTextBook(a,mid+1,high);
+        Triple<Integer,Integer,Integer> cross = findCross(a,low,mid,high);
+        return Math.max(Math.max(left,right),cross.getRight());
+    }
 
+    private Triple<Integer, Integer, Integer> findCross(int[] a, int low, int mid, int high) {
+        int leftsum =a[mid];
+        int sosum = 0;
+        int min_right = mid;
+        for (int i = mid; i >= low&&mid>=low; i--) {
+            sosum+=a[i];
+            if(sosum>leftsum){
+                leftsum =sosum;
+                min_right = i;
+            }
+        }
+        int rightsum =a[mid+1];
+        sosum = 0;
+        int max_right = mid+1;
+        for (int ii = mid+1; ii <=high&&high>mid+1; ii++) {
+            sosum+=a[ii];
+            if(sosum>rightsum){
+                rightsum =sosum;
+                max_right = ii;
+            }
+        }
+        return Triple.of(min_right,max_right,leftsum+rightsum);
+    }
 
     private int findBySimpleDP(int[] a) {
         int[] dp = new int[a.length];
