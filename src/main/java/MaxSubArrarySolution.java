@@ -2,8 +2,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Test;
 
+import java.util.logging.Logger;
 
 public class MaxSubArrarySolution {
+    private Logger log= Logger.getLogger(MaxSubArrarySolution.class.getName());
     int[] a={13,-3,-25,20,-3,-16,-23,18,20,-7,12,-5,-22,15,-4,7};
 
     @Test
@@ -70,18 +72,22 @@ public class MaxSubArrarySolution {
     }
     @Test
     public void testTestBook(){
-        int sum = findByTextBook(a, 0, a.length - 1);
+        Triple<Integer, Integer, Integer> sum = findByTextBook(a, 0, a.length - 1);
         System.out.println(sum);
     }
-    private int findByTextBook(int[] a,int low,int high){
+    private Triple<Integer, Integer, Integer> findByTextBook(int[] a,int low,int high){
         if (low == high) {
-            return a[low];
+            return Triple.of(low,low,a[low]);
         }
         int mid = (low+high)/2;
-        int left = findByTextBook(a,low,mid);
-        int right = findByTextBook(a,mid+1,high);
+        Triple<Integer, Integer, Integer> left = findByTextBook(a,low,mid);
+        Triple<Integer, Integer, Integer> right = findByTextBook(a,mid+1,high);
         Triple<Integer,Integer,Integer> cross = findCross(a,low,mid,high);
-        return Math.max(Math.max(left,right),cross.getRight());
+        if(left.getRight()>=right.getRight()&&left.getRight()>=cross.getRight())
+            return left;
+        if(right.getRight()>=left.getRight()&&right.getRight()>=cross.getRight())
+            return right;
+        return cross;
     }
 
     private Triple<Integer, Integer, Integer> findCross(int[] a, int low, int mid, int high) {
