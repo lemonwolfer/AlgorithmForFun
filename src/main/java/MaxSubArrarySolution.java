@@ -1,10 +1,13 @@
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Test;
+
+
 public class MaxSubArrarySolution {
+    int[] a={13,-3,-25,20,-3,-16,-23,18,20,-7,12,-5,-22,15,-4,7};
 
     @Test
-    public void test(){
-        int[] a={13,-3,-25,20,-3,-16,-23,18,20,-7,12,-5,-22,15,-4,7};
+    public void testByDivideAndConquer(){
         Pair<Integer, Integer> result =findMaxSubSum(a,0,a.length-1);
         StringBuilder ids = new StringBuilder();
         for (int i = result.getLeft(); i <= result.getRight(); i++) {
@@ -12,6 +15,10 @@ public class MaxSubArrarySolution {
         }
         System.out.println(result);
         System.out.println(ids);
+
+    }
+    @Test
+    public void testByPositionSolution(){
         boolean[] possibilities =  new boolean[]{true, true, true, true, true, true, true, true,true, true, true, true,true, true, true};
         int[] starts = new int[a.length];
         for (int i=a.length-1;i>=0;i--){
@@ -49,6 +56,51 @@ public class MaxSubArrarySolution {
         }
         System.out.println("biggest:"+biggest+"["+startI+","+foundEnd+"]");
     }
+    @Test
+    public void testByDP(){
+        Triple<?,?,?> result = null;
+        for (int i = 0; i <a.length-1 ; i++) {
+            result= findByDP(a,0,i);
+        }
+        System.out.println(result);
+
+    }
+    private Triple<Integer, Integer,Integer> findByDP(int[] arr, int bi, int i){
+        if(i==0)
+            return Triple.of(0,0,arr[0]);
+        if(bi==i)
+            return Triple.of(i,i,arr[i]);
+        Triple<Integer,Integer,Integer> previous = findByDP(arr, bi, i-1);
+        int previousSum = previous.getRight();
+        int previousStartI= previous.getLeft();
+        int previousEndI = previous.getMiddle();
+        if(previousSum>0){
+            if(arr[i]<=0)
+                return previous;
+            if(previousEndI+1==i){
+                return Triple.of( previousStartI, i, previousSum+arr[i]);
+            }
+            else {
+                Triple<Integer, Integer,Integer> gap = findByDP(arr, previousEndI+1,i-1 );
+
+                if((previousSum+gap.getRight()>0)&&(arr[i]+gap.getRight()>0)&&
+                        gap.getLeft()==previousEndI+1 &&
+                        gap.getMiddle()==i-1)
+                    return Triple.of(previousStartI, i, previousSum + gap.getRight() + arr[i]);
+                if(gap.getMiddle()+1==i)
+                {
+                    if(gap.getRight()+arr[i]>=previousSum)
+                        return Triple.of(gap.getLeft(),i,gap.getRight()+arr[i]);
+                    return previous;
+                }
+                if(arr[i]>=previousSum)
+                    return Triple.of(i,i,arr[i]);
+                else
+                    return previous;
+            }
+        }else
+            return Triple.of(i,i,arr[i]);
+    }
     private int findByEndPosition(int[] arr,int endI){
         if(endI==0)
             return endI;
@@ -76,15 +128,14 @@ public class MaxSubArrarySolution {
         // have at least one gaps between children solutions
         if(right.getLeft()>left.getRight()+1){
             // gaps negative either part,means gaps are abandoned
-            if(getSum(arr,Pair.of(left.getRight()+1,right.getLeft()-1))+getSum(arr,left)<0||
-                    getSum(arr,Pair.of(left.getRight()+1,right.getLeft()-1))+getSum(arr,right)<0){
-                if(getSum(arr,right)>getSum(arr,left))
-                    return right;
-                else
-                    return left;
+            if (getSum(arr, Pair.of(left.getRight() + 1, right.getLeft() - 1)) + getSum(arr, left) > 0 &&
+                    getSum(arr, Pair.of(left.getRight() + 1, right.getLeft() - 1)) + getSum(arr, right) > 0) {
+                return Pair.of(left.getLeft(),right.getRight());
             }
-            // gaps positive either part,means gaps should be included  AA
-            // left +gap >0 or right + gap >0
+            if (getSum(arr, right) > getSum(arr, left))
+                return right;
+            else
+                return left;
         }
         // no gaps between left and right,positive both accumulate,else return bigger one
         if(left.getRight()+1==right.getLeft()){
@@ -95,7 +146,7 @@ public class MaxSubArrarySolution {
             if(getSum(arr,left)<getSum(arr,right))
                 return right;
         }
-        return Pair.of(left.getLeft(),right.getRight()); //AA
+        return Pair.of(left.getLeft(),right.getRight());
     }
 
     private int getSum(int[] arr, Pair<Integer, Integer> pair) {
