@@ -63,8 +63,24 @@ public class MaxSubArrarySolution {
             result= findByDP(a,0,i);
         }
         System.out.println(result);
-
     }
+    @Test
+    public void testSimpleDP(){
+        System.out.println(findBySimpleDP(a));
+    }
+
+
+    private int findBySimpleDP(int[] a) {
+        int[] dp = new int[a.length];
+        dp[0] = a[0];
+        int maxtotal = dp[0];
+        for (int i = 1; i < a.length; i++) {
+            dp[i] = a[i]+Math.max(dp[i-1],0);
+            maxtotal = Math.max(maxtotal,dp[i]);
+        }
+        return maxtotal;
+    }
+
     private Triple<Integer, Integer,Integer> findByDP(int[] arr, int bi, int i){
         if(i==0)
             return Triple.of(0,0,arr[0]);
