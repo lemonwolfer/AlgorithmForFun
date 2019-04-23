@@ -1,6 +1,7 @@
 package bsts;
 
-import lombok.Data;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class RBBST<Key extends Comparable<Key>,Value> {
     private static final boolean RED = true;
@@ -17,15 +18,36 @@ public class RBBST<Key extends Comparable<Key>,Value> {
     }
     public void TravelPyramid(){
         System.out.println("TravelTree from top");
-        travesalPyramid(root);
+        List<List<Key>> result=levelOrderBottom(root);
+        Collections.reverse(result);
+        List<Key> f =result.stream().flatMap(listContainer ->listContainer.stream()).collect(Collectors.toList());
+        f.stream().forEach(x->System.out.println(x));
     }
 
-    private void travesalPyramid(Node node) {
-        if(node==null)
-            return;
-        System.out.println("["+node.key+":"+(node.color?"R":"B")+"]");
-        travesal(node.left);
-        travesal(node.right);
+    public List<List<Key>> levelOrderBottom(Node root) {
+        List<List<Key>> list = new ArrayList<>();
+        if(root == null)
+            return list;
+        //层次遍历
+        Queue<Node> queue = new LinkedList<>();
+        queue.add(root);
+        while(true){
+            Queue<Node> temp = new LinkedList<>();
+            List<Key> tempList = new ArrayList<>();
+            while(!queue.isEmpty()){
+                Node t = queue.poll();
+                tempList.add(t.key);
+                if(t.left!=null)
+                    temp.add(t.left);
+                if(t.right!=null)
+                    temp.add(t.right);
+            }
+            list.add(0,tempList);//自底向上输出
+            if(temp.isEmpty())
+                break;
+            queue = temp;
+        }
+        return list;
     }
 
     private void travesal(Node node) {
@@ -37,52 +59,60 @@ public class RBBST<Key extends Comparable<Key>,Value> {
     }
 
     public void put(Key key,Value value){
-        doPut(this.root, key, value);
+        root= doPut(this.root, key, value);
     }
 
-    private void doPut(Node entryNode, Key key, Value value) {
+    private Node doPut(Node entryNode, Key key, Value value) {
         Node newNode = new Node(key,value,0,RED);
+        Node Oldroot = entryNode;
         Node p = null;
         boolean isLeft=true;
         while (entryNode!=null){
             p = entryNode;
-            if(key.compareTo(entryNode.key)<0)
+            if(key.compareTo(entryNode.key)<0){
                 entryNode = entryNode.left;
+                isLeft = true;
+            }
+
             else if(key.compareTo(entryNode.key)>0){
                 isLeft = false;
                 entryNode = entryNode.right;
             }
             else{
                 entryNode.value = value;
-                return;
+                return Oldroot;
             }
         }
         newNode.parent = p;
         if(p==null){
             root = newNode;
-            return;
+            root.color = BLACK;
+            return root;
         }
 
         if(isLeft)
-            p.setLeft(newNode);
+            p.left=newNode;
         else
-            p.setRight(newNode);
+            p.right=newNode;
         ReBalance(p);
+        return Oldroot;
     }
 
     private void ReBalance(Node p) {
-        if(p.parent==null){
-            p.color = BLACK;
+        if(p==null)
             return;
-        }
+
         if(isStraightLine(p))
             topTurn(p);
-        if(isRed(p.right)&&!isRed(p.left)){
+        if(isRed(p)&&isRed(p.right)&&!isRed(p.left)){
             leftTurn(p);
         }
 
         if (isRed(p.left)&&isRed(p.right)){
             flipColor(p);
+        }
+        if(p.parent==null){
+            p.color = BLACK;
         }
         ReBalance(p.parent);
     }
@@ -109,24 +139,27 @@ public class RBBST<Key extends Comparable<Key>,Value> {
      */
     private void topTurn(Node p) {
         Node father = p.parent;
+        Node right = p.right;
+        Node left = p.left;
         if(p.parent.left==p){
-            Node left = p.left;
+            p.parent = father.parent;
             p.right = father;
-            p.left = left;
+            p.right.left = right;
             father.parent = p;
             left.color = BLACK;
             left.parent = p;
         }
         else if(p.parent.right==p){
-            Node right = p.right;
+
+            p.parent = father.parent;
             p.left = father;
-            p.right = right;
+            p.left.right = left;
             father.parent = p;
             right.color = BLACK;
             right.parent = p;
 
         }
-        p.parent = father.parent;
+
         p.color = RED;
         father.color = BLACK;
 
@@ -144,7 +177,7 @@ public class RBBST<Key extends Comparable<Key>,Value> {
         p.parent = right;
     }
 
-    @Data
+
     private class Node{
         private Key key;
         private Value value;
