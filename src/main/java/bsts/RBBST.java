@@ -1,6 +1,7 @@
 package bsts;
 
 import lombok.Data;
+import org.apache.commons.lang3.tuple.Triple;
 
 public class RBBST<Key extends Comparable<Key>,Value> {
     private static final boolean RED = true;
@@ -10,30 +11,105 @@ public class RBBST<Key extends Comparable<Key>,Value> {
     public RBBST() {
         this.root = null;
     }
-
-    public Node put(Key key,Value value){
-        Node root = doPut(this.root, key, value);
-        return root;
+    public void TravelTree(){
+        travesal(root);
     }
 
-    private Node doPut(Node entryNode, Key key, Value value) {
+    private void travesal(Node node) {
+        if(node==null)
+            return;
+        travesal(node.left);
+        System.out.println("["+node.key+":"+node.color+"]");
+        travesal(node.right);
+    }
+
+    public void put(Key key,Value value){
+        doPut(this.root, key, value);
+    }
+
+    private void doPut(Node entryNode, Key key, Value value) {
         Node newNode = new Node(key,value,0,RED);
-        if (entryNode == null){
-            newNode.setColor(BLACK);
-            return newNode;
+        Node p = null;
+        boolean isLeft=true;
+        while (entryNode!=null){
+            p = entryNode;
+            if(key.compareTo(entryNode.key)<0)
+                entryNode = entryNode.left;
+            else if(key.compareTo(entryNode.key)>0){
+                isLeft = false;
+                entryNode = entryNode.right;
+            }
+            else{
+                entryNode.value = value;
+                return;
+            }
         }
-        if(key.compareTo(entryNode.key)<0)
-            entryNode.left = doPut(entryNode.left,key,value);
-        else if(key.compareTo(entryNode.key)>0)
-            entryNode.right = doPut(entryNode.right,key,value);
+        newNode.parent = p;
+        if(isLeft)
+            p.setLeft(newNode);
         else
-            entryNode.value = value;
+            p.setRight(newNode);
+        ReBalance(p);
     }
+
+    private void ReBalance(Node p) {
+        if(p.parent==null){
+            p.color = BLACK;
+            return;
+        }
+
+        if(p.right.color==RED&&(p.left==null||(p.left!=null&&p.left.color!=RED))){
+            leftTurn(p);
+        }
+        if(p.left.color==RED&&p.parent.color==RED){
+            topTurn(p);
+        }
+        if (p.left.color==RED&&p.right.color==RED){
+            flipColor(p);
+        }
+        ReBalance(p.parent);
+    }
+
+    /**
+     * p的左右都是红色 ，p不可能是红色
+     * @param p
+     */
+    private void flipColor(Node p) {
+        p.color = RED;
+        p.left.color = BLACK;
+        p.right.color = BLACK;
+    }
+
+    /**
+     * p和p.left都是红色 转为三角形 上红下黑
+     * @param p
+     */
+    private void topTurn(Node p) {
+        Node left = p.left;
+        Node father = p.parent;
+        p.right = father;
+        father.parent = p;
+        p.color = RED;
+        father.color = BLACK;
+        left.color = BLACK;
+    }
+
+    /**
+     * p和p.right都是红色
+     * @param p
+     */
+    private void leftTurn(Node p) {
+        Node right = p.right;
+        right.left = p;
+        p.right = right.left;
+        p.parent = right;
+    }
+
     @Data
     private class Node{
         private Key key;
         private Value value;
-        private Node left,right;
+        private Node left,right,parent;
         private int N;
         boolean color;
 
