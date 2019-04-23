@@ -1,7 +1,6 @@
 package bsts;
 
 import lombok.Data;
-import org.apache.commons.lang3.tuple.Triple;
 
 public class RBBST<Key extends Comparable<Key>,Value> {
     private static final boolean RED = true;
@@ -11,15 +10,29 @@ public class RBBST<Key extends Comparable<Key>,Value> {
     public RBBST() {
         this.root = null;
     }
+
     public void TravelTree(){
+        System.out.println("TravelTree from smaller key to bigger");
         travesal(root);
+    }
+    public void TravelPyramid(){
+        System.out.println("TravelTree from top");
+        travesalPyramid(root);
+    }
+
+    private void travesalPyramid(Node node) {
+        if(node==null)
+            return;
+        System.out.println("["+node.key+":"+(node.color?"R":"B")+"]");
+        travesal(node.left);
+        travesal(node.right);
     }
 
     private void travesal(Node node) {
         if(node==null)
             return;
         travesal(node.left);
-        System.out.println("["+node.key+":"+node.color+"]");
+        System.out.println("["+node.key+":"+(node.color?"R":"B")+"]");
         travesal(node.right);
     }
 
@@ -45,6 +58,11 @@ public class RBBST<Key extends Comparable<Key>,Value> {
             }
         }
         newNode.parent = p;
+        if(p==null){
+            root = newNode;
+            return;
+        }
+
         if(isLeft)
             p.setLeft(newNode);
         else
@@ -57,17 +75,22 @@ public class RBBST<Key extends Comparable<Key>,Value> {
             p.color = BLACK;
             return;
         }
-
-        if(p.right.color==RED&&(p.left==null||(p.left!=null&&p.left.color!=RED))){
+        if(isStraightLine(p))
+            topTurn(p);
+        if(isRed(p.right)&&!isRed(p.left)){
             leftTurn(p);
         }
-        if(p.left.color==RED&&p.parent.color==RED){
-            topTurn(p);
-        }
-        if (p.left.color==RED&&p.right.color==RED){
+
+        if (isRed(p.left)&&isRed(p.right)){
             flipColor(p);
         }
         ReBalance(p.parent);
+    }
+
+    private boolean isStraightLine(Node p) {
+        boolean leftSleap = isRed(p.left)&&isRed(p)&&p.parent.left==p;
+        boolean rightSleap =isRed(p.right)&&isRed(p)&&p.parent.right==p;
+        return leftSleap||rightSleap;
     }
 
     /**
@@ -85,13 +108,29 @@ public class RBBST<Key extends Comparable<Key>,Value> {
      * @param p
      */
     private void topTurn(Node p) {
-        Node left = p.left;
         Node father = p.parent;
-        p.right = father;
-        father.parent = p;
+        if(p.parent.left==p){
+            Node left = p.left;
+            p.right = father;
+            p.left = left;
+            father.parent = p;
+            left.color = BLACK;
+            left.parent = p;
+        }
+        else if(p.parent.right==p){
+            Node right = p.right;
+            p.left = father;
+            p.right = right;
+            father.parent = p;
+            right.color = BLACK;
+            right.parent = p;
+
+        }
+        p.parent = father.parent;
         p.color = RED;
         father.color = BLACK;
-        left.color = BLACK;
+
+
     }
 
     /**
