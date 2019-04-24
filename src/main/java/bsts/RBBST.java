@@ -1,5 +1,7 @@
 package bsts;
 
+import com.google.common.collect.Lists;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,6 +13,22 @@ public class RBBST<Key extends Comparable<Key>,Value> {
     public RBBST() {
         this.root = null;
     }
+    public List<List<Key>> TravelTopToDown(Node root){
+        Map<Integer,List<Node>> levelMap = new HashMap<>();
+        processNode(root,levelMap,1);
+        List<List<Node>> result=levelMap.keySet().stream().sorted(Comparator.comparing(x->x)).map(k->levelMap.get(k))
+                .collect(Collectors.toList());
+        List<List<Key>> keyList = result.stream().map(l->l.stream().map(sl->sl.key).collect(Collectors.toList())).collect(Collectors.toList());
+        return keyList;
+    }
+
+    private void processNode(Node node, Map<Integer, List<Node>> levelMap, int level) {
+        if(node==null)
+            return;
+        levelMap.computeIfAbsent(level, k -> Lists.newArrayList()).add(node);
+        processNode(node.left,levelMap,level+1);
+        processNode(node.right,levelMap,level+1);
+    }
 
     public void TravelTree(){
         System.out.println("TravelTree from smaller key to bigger");
@@ -18,8 +36,7 @@ public class RBBST<Key extends Comparable<Key>,Value> {
     }
     public void TravelPyramid(){
         System.out.println("TravelTree from top");
-        List<List<Key>> result=levelOrderBottom(root);
-        Collections.reverse(result);
+        List<List<Key>> result=TravelTopToDown(root);
         List<Key> f =result.stream().flatMap(listContainer ->listContainer.stream()).collect(Collectors.toList());
         f.stream().forEach(x->System.out.println(x));
     }
@@ -42,7 +59,7 @@ public class RBBST<Key extends Comparable<Key>,Value> {
                 if(t.right!=null)
                     temp.add(t.right);
             }
-            list.add(0,tempList);//自底向上输出
+            list.add(tempList);//自底向上输出
             if(temp.isEmpty())
                 break;
             queue = temp;
