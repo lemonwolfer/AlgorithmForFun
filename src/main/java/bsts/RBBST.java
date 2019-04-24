@@ -15,7 +15,7 @@ public class RBBST<Key extends Comparable<Key>,Value> {
     }
     public List<List<Key>> TravelTopToDown(Node root){
         Map<Integer,List<Node>> levelMap = new HashMap<>();
-        processNode(root,levelMap,1);
+        processNode(root, levelMap, 1);
         List<List<Node>> result=levelMap.keySet().stream().sorted(Comparator.comparing(x->x)).map(k->levelMap.get(k))
                 .collect(Collectors.toList());
         List<List<Key>> keyList = result.stream().map(l->l.stream().map(sl->sl.key).collect(Collectors.toList())).collect(Collectors.toList());
